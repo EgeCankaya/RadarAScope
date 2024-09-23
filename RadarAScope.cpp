@@ -19,7 +19,8 @@ void CRadarAScopeDisplay::endAScope() {
     glutMainLoop();
 }
 
-void CRadarAScopeDisplay::addEntry(float range, float amplitude) {
-    scope.addDataPoint(range, amplitude);
+void CRadarAScopeDisplay::addEntry(float ranges[], float amplitudes[], int size)
+{   
+    scope.addDataPoint(ranges, amplitudes, size);
     glutPostRedisplay();
 }

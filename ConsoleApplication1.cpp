@@ -3,14 +3,19 @@
 #include <cstdlib>
 #include <GL/freeglut.h>
 
-float km = 0.0f, v = 0.0f;
+float range[301], amplitude[301];
+int size;
 CRadarAScope* aScope = nullptr; 
 
 void timerFunc(int value) {
-    km = rand() % 300;
-    v = (rand() % 50) / 10.0f;
+    int randSize = rand() % 30;
     
-    aScope->addEntry(km, v);
+    for (int i = 0; i < randSize; i++) {
+        range[i] = rand() % 300;
+        amplitude[i] = (rand() % 50) / 10.0f;
+    }
+    aScope->addEntry(range, amplitude, randSize);
+
     glutTimerFunc(value, timerFunc, value);
 }
 

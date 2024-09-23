@@ -18,8 +18,8 @@ public:
         display->endAScope();
     }
 
-    void addEntry(float range, float amplitude) {
-        display->addEntry(range, amplitude);
+    void addEntry(float range[], float amplitude[], int size) {
+        display->addEntry(range, amplitude, size);
     }
 
 private:

@@ -85,27 +85,6 @@ void CDrawAScope::drawLabels() {
     }
 }
 
-
-
-/*void CDrawAScope::drawDataPoints(const std::vector<std::pair<float, float>>& points) {
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glLineWidth(2.0f);
-
-    float currentWindowStart = (int(rangeShift) * maxRange);
-    float currentWindowEnd = currentWindowStart + maxRange;
-
-    glBegin(GL_LINE_STRIP);
-    for (const auto& point : points) {
-        if (point.first >= currentWindowStart && point.first <= currentWindowEnd) {
-            float normalizedX = xOffset + ((point.first - currentWindowStart) / maxRange) * (1.0f - xOffset);
-            float normalizedY = yOffset + (point.second / maxAmplitude) * (1.0f - yOffset);
-            glVertex2f(normalizedX, normalizedY);
-        }
-    }
-    glEnd();
-}
-*/
-
 void CDrawAScope::resizeArray() {
     capacity *= 2;
     float* newRanges = new float[capacity];
@@ -186,22 +165,20 @@ void CDrawAScope::drawDataPoints() {
 
                     if (amplitude >= nextAmplitude) {
                         glBegin(GL_LINE_STRIP);
-                        glVertex2f(leftX, lastY);  
+                        glVertex2f(leftX, lastY); 
                         glVertex2f(normalizedX, normalizedY); 
-                        glVertex2f(nextNormalizedX, nextNormalizedY);  
-                        glVertex2f(nextNormalizedX + detectedRange, lastY);
+                        glVertex2f(nextNormalizedX, nextNormalizedY); 
+                        glVertex2f(nextNormalizedX + detectedRange, lastY); 
                         glEnd();
+                        i++;
                     }
                     else {
-                        // Skip rendering 
                         continue;
                     }
                 }
             }
-
           
             if (!overlapDetected) {
-            
                 glBegin(GL_LINES);
                 glVertex2f(lastX, lastY); 
                 glVertex2f(leftX, lastY);  
@@ -215,47 +192,45 @@ void CDrawAScope::drawDataPoints() {
                     glEnd();
                 }
 
-
                 glBegin(GL_LINES);
                 glVertex2f(rightX, lastY);
                 lastX = rightX;
-                lastY = yOffset + 0.5f * (1.0f - yOffset);       
+      
                 glVertex2f(lastX, lastY); 
                 glEnd();
             }
         }
     }
 
-
     float finalX = xOffset + (maxRange / maxRange) * (1.0f - xOffset);
     glBegin(GL_LINES);
     glVertex2f(lastX, lastY);   
     glVertex2f(finalX, lastY);
     glEnd();
+    sortDataPoints();
 }
 
+void CDrawAScope::addDataPoint(float range[], float amplitude[], int size) {
+    currentSize = 0;
 
+    for (int i = 0; i < size; i++) {
+        if (amplitude[i] > maxAmplitude) {
+            maxAmplitude = amplitude[i];
+        }
 
+        if (currentSize >= capacity) {
+            resizeArray();
+        }
 
-
-void CDrawAScope::addDataPoint(float range, float amplitude) {
-    float tolerance = 0.05f;
-
-    if (std::abs(amplitude) > maxAmplitude + tolerance) {
-        maxAmplitude = std::abs(amplitude);
+        ranges[currentSize] = range[i];
+        amplitudes[currentSize] = amplitude[i];
+        ++currentSize;
     }
-
-    if (currentSize >= capacity) {
-        resizeArray();
-    }
-
-    ranges[currentSize] = range;
-    amplitudes[currentSize] = amplitude;
-    ++currentSize;
 
     sortDataPoints();
 
     glutPostRedisplay();
 }
+
 
 CDrawAScope scope;
