@@ -42,9 +42,6 @@ void CDisplay::reshapeWrapper(int width, int height) {
 }
 
 void CDisplay::setCallbacks() {
-    gridXLines = maxRange / xLabelInterval;
-    gridYLines = maxAmplitude / yLabelInterval;
-
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glColor3f(0.0, 1.0, 0.0);
 

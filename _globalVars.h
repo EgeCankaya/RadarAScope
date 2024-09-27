@@ -2,8 +2,6 @@
 #define _GLOBALVARS_H
 #include <vector>
 
-extern std::vector<std::pair<float, float>> dataPoints;
-
 extern int rangeShift;
 extern float maxRange;
 extern float maxAmplitude;

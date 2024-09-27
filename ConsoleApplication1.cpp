@@ -8,7 +8,7 @@ int size;
 CRadarAScope* aScope = nullptr; 
 
 void timerFunc(int value) {
-    int randSize = rand() % 30;
+    int randSize = rand() % 10;
     
     for (int i = 0; i < randSize; i++) {
         range[i] = rand() % 300;
