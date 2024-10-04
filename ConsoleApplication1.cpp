@@ -2,6 +2,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <GL/freeglut.h>
+#include <iostream>
 
 float range[301], amplitude[301];
 int size;
@@ -15,6 +16,7 @@ void timerFunc(int value) {
         amplitude[i] = (rand() % 50) / 10.0f;
     }
     aScope->addEntry(range, amplitude, randSize);
+  
 
     glutTimerFunc(value, timerFunc, value);
 }
