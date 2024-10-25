@@ -3,6 +3,9 @@
 #include "CDisplay.h"
 #include "CDrawAScope.h"
 
+CDisplay& _disp = CDisplay::getInstance();
+CDrawAScope& _scope = CDrawAScope::getInstance();
+
 void CRadarAScopeDisplay::run() {
     int argc = 1;
     char* argv[1] = { (char*)"RadarDisplay" };
@@ -11,8 +14,8 @@ void CRadarAScopeDisplay::run() {
     glutInitWindowSize(800, 600);
     glutCreateWindow("Radar A-Scope");
 
-    disp.setCallbacks();
-    scope.setCallbacks();
+    _disp.setCallbacks();
+    _scope.setCallbacks();
 }
 
 void CRadarAScopeDisplay::endAScope() {
@@ -21,6 +24,6 @@ void CRadarAScopeDisplay::endAScope() {
 
 void CRadarAScopeDisplay::addEntry(float ranges[], float amplitudes[], int size)
 {   
-    scope.addDataPoint(ranges, amplitudes, size);
+    _scope.addDataPoint(ranges, amplitudes, size);
     glutPostRedisplay();
 }

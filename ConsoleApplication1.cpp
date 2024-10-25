@@ -6,14 +6,15 @@
 
 float range[301], amplitude[301];
 int size;
+
 CRadarAScope* aScope = nullptr; 
 
 void timerFunc(int value) {
-    int randSize = rand() % 10;
-    
+    int randSize = rand() % 150;
+    int c=0;
     for (int i = 0; i < randSize; i++) {
         range[i] = rand() % 300;
-        amplitude[i] = (rand() % 50) / 10.0f;
+        amplitude[i] = ((rand() % 100) / 10.0f) - 5.0f;
     }
     aScope->addEntry(range, amplitude, randSize);
   

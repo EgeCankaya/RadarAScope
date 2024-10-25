@@ -7,6 +7,7 @@
 class CDrawAScope
 {
 public:
+    static CDrawAScope& getInstance();
     void setCallbacks();
     
     CDrawAScope() : currentSize(0), capacity(10) {
@@ -35,6 +36,5 @@ private:
     int currentSize;  
     int capacity;     
 };   
-extern CDrawAScope scope;
 
 #endif // CDRAWASCOPE_H

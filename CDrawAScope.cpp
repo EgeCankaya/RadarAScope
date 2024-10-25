@@ -3,6 +3,14 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+#include <vector>
+
+_Variables* _VarsDisp = _Variables::getInstance();
+
+CDrawAScope& CDrawAScope::getInstance() {
+    static CDrawAScope instance;
+    return instance;
+}
 
 void CDrawAScope::setCallbacks() {
     drawGrid();
@@ -16,33 +24,33 @@ void CDrawAScope::drawAxes() {
     glLineWidth(2.0f);
 
     glBegin(GL_LINES);
-    glVertex2f(xOffset, yOffset + 0.45f); 
-    glVertex2f(1.0f, yOffset + 0.45f);  
+    glVertex2f(_VarsDisp->xOffset, _VarsDisp->yOffset + 0.45f);
+    glVertex2f(1.0f, _VarsDisp->yOffset + 0.45f);
     glEnd();
 
     glColor3f(0.0f, 1.0f, 0.0f);
     glBegin(GL_LINES);
-    glVertex2f(xOffset, yOffset);
-    glVertex2f(xOffset, 1.0f);
+    glVertex2f(_VarsDisp->xOffset, _VarsDisp->yOffset);
+    glVertex2f(_VarsDisp->xOffset, 1.0f);
     glEnd();
 }
 
 void CDrawAScope::drawGrid() {                               
-    glColor3f(0.0f, 0.5f, 0.0f);
+    glColor3f(0.0f, 0.3f, 0.0f);
     glLineWidth(1.0f);
 
-    for (int i = 0; i <= gridXLines; ++i) {
-        float x = xOffset + (float)i / gridXLines * (1.0f - xOffset);
+    for (int i = 0; i <= _VarsDisp->gridXLines; ++i) {
+        float x = _VarsDisp->xOffset + (float)i / _VarsDisp->gridXLines * (1.0f - _VarsDisp->xOffset);
         glBegin(GL_LINES);
-        glVertex2f(x, yOffset);
+        glVertex2f(x, _VarsDisp->yOffset);
         glVertex2f(x, 1.0f);
         glEnd();
     }
 
-    for (int i = 0; i <= gridYLines; ++i) {
-        float y = yOffset + (float)i / gridYLines * (1.0f - yOffset);
+    for (int i = 0; i <= _VarsDisp->gridYLines; ++i) {
+        float y = _VarsDisp->yOffset + (float)i / _VarsDisp->gridYLines * (1.0f - _VarsDisp->yOffset);
         glBegin(GL_LINES);
-        glVertex2f(xOffset, y);
+        glVertex2f(_VarsDisp->xOffset, y);
         glVertex2f(1.0f, y);
         glEnd();
     }
@@ -50,14 +58,14 @@ void CDrawAScope::drawGrid() {
 void CDrawAScope::drawLabels() {
     glColor3f(0.0f, 0.8f, 0.0f);
 
-    for (int i = 0; i <= gridYLines; ++i) {
-        float y = yOffset + (float)i / gridYLines * (1.0f - yOffset);
-        float amplitude = (i - gridYLines / 2) * (maxAmplitude / (gridYLines / 2));
+    for (int i = 0; i <= _VarsDisp->gridYLines; ++i) {
+        float y = _VarsDisp->yOffset + (float)i / _VarsDisp->gridYLines * (1.0f - _VarsDisp->yOffset);
+        float amplitude = (i - _VarsDisp->gridYLines / 2) * (_VarsDisp->maxAmplitude / (_VarsDisp->gridYLines / 2));
 
         float xOffsetAdjustment = (amplitude < 0.0f) ? -0.065f : -0.05f;
 
         glPushMatrix();
-        glTranslatef(xOffset + xOffsetAdjustment, y - 0.01f, 0.0f);
+        glTranslatef(_VarsDisp->xOffset + xOffsetAdjustment, y - 0.01f, 0.0f);
         glScalef(0.00015f, 0.00015f, 1.0f);
 
         char label[10];
@@ -70,15 +78,15 @@ void CDrawAScope::drawLabels() {
         glPopMatrix();
     }
 
-    float currentWindowStart = (int(rangeShift) * maxRange);
-    float currentWindowEnd = currentWindowStart + maxRange;
+    float currentWindowStart = (int(_VarsDisp->rangeShift) * _VarsDisp->maxRange);
+    float currentWindowEnd = currentWindowStart + _VarsDisp->maxRange;
 
-    for (int i = 0; i <= gridXLines; ++i) {
-        float x = xOffset + (float)i / gridXLines * (1.0f - xOffset);
-        float range = currentWindowStart + i * (maxRange / gridXLines);
+    for (int i = 0; i <= _VarsDisp->gridXLines; ++i) {
+        float x = _VarsDisp->xOffset + (float)i / _VarsDisp->gridXLines * (1.0f - _VarsDisp->xOffset);
+        float range = currentWindowStart + i * (_VarsDisp->maxRange / _VarsDisp->gridXLines);
 
         glPushMatrix();
-        glTranslatef(x - 0.02f, yOffset - 0.05f, 0.0f);
+        glTranslatef(x - 0.02f, _VarsDisp->yOffset - 0.05f, 0.0f);
         glScalef(0.00015f, 0.00015f, 1.0f);
 
         char label[10];
@@ -137,259 +145,122 @@ void CDrawAScope::sortDataPoints() {
 }
 
 void CDrawAScope::drawDataPoints() {
-    glColor3f(0.0f, 1.0f, 0.0f);
+    glColor3f(1.0f, 0.0f, 0.0f);
     glLineWidth(1.0f);
 
-    float lastX = xOffset;
-    float lastY = yOffset + 0.5f * (1.0f - yOffset);
-    std::cout << currentSize << std::endl;
+    float lastX = _VarsDisp->xOffset;
+    float lastY = _VarsDisp->yOffset + 0.5f * (1.0f - _VarsDisp->yOffset);  // y=0 level
 
-    for (int i = 0; i < currentSize - 1; ++i) {
-        float range = ranges[i];
-        float amplitude = amplitudes[i];
+    const int numSections = 150;  // Number of sections along the x-axis
+    const float sectionWidth = (1.0f - _VarsDisp->xOffset) / numSections;  // Section width based on x-axis
+    _VarsDisp->detectedRange = sectionWidth / 16;  // Use detectedRange as per original logic
 
-        float range_next = ranges[i + 1];
-        float amplitude_next = amplitudes[i + 1];
+    std::vector<float> sectionRenderValues(numSections, lastY);  // Store render values for each section, initialized to y=0
+    std::vector<float> sectionXValues(numSections, lastX);       // Store the corresponding x-values (normalizedX) for each section
 
-        float range_next_next = ranges[i + 2];
-        float amplitude_next_next = amplitudes[i + 2];
+    std::vector<float> positiveAmplitudes(numSections, 0.0f);  // Track max positive amplitude per section
+    std::vector<float> negativeAmplitudes(numSections, 0.0f);  // Track max negative amplitude per section
 
-        if (range >= 0 && range <= maxRange) {
-            float normalizedX = xOffset + (range / maxRange) * (1.0f - xOffset);
-            float normalizedY = yOffset + ((amplitude / maxAmplitude) * (1.0f - yOffset) / 2.0f + 0.5f * (1.0f - yOffset));
+    // Iterate through all data points
+    for (int i = 0; i < currentSize; ++i) {
+        float range_i = ranges[i];
+        float amplitude_i = amplitudes[i];
 
-            float normalizedX_next = xOffset + (range_next / maxRange) * (1.0f - xOffset);
-            float normalizedY_next = yOffset + ((amplitude_next / maxAmplitude) * (1.0f - yOffset) / 2.0f + 0.5f * (1.0f - yOffset));
+        if (range_i < 0 || range_i > _VarsDisp->maxRange) continue;  // Ignore out-of-range data
 
-            float normalizedX_next_next = xOffset + (range_next_next / maxRange) * (1.0f - xOffset);
-            float normalizedY_next_next = yOffset + ((amplitude_next_next / maxAmplitude) * (1.0f - yOffset) / 2.0f + 0.5f * (1.0f - yOffset));
+        std::cout << "Amplitude[" << i << "] = " << amplitude_i << std::endl;
+        std::cout << "Range[" << i << "] = " << range_i << std::endl;
+        // Normalized x, y values
+        float normalizedX = _VarsDisp->xOffset + (range_i / _VarsDisp->maxRange) * (1.0f - _VarsDisp->xOffset);
 
-            float distBetweenGrids = (1.0f - xOffset) / gridXLines;
-            detectedRange = distBetweenGrids / 8;
+        // Calculate section boundaries
+        float leftX = normalizedX - _VarsDisp->detectedRange;
+        float rightX = normalizedX + _VarsDisp->detectedRange;
 
-            float leftX = normalizedX - detectedRange;
-            float rightX = normalizedX + detectedRange;
+        int leftSection = std::max(0, int((leftX - _VarsDisp->xOffset) / sectionWidth));
+        int rightSection = std::min(numSections - 1, int((rightX - _VarsDisp->xOffset) / sectionWidth));
 
-            float leftX_next = normalizedX_next - detectedRange;
-            float rightX_next = normalizedX_next + detectedRange;
+        // Adjust rendering across sections for points spanning multiple sections
+        for (int section = leftSection; section <= rightSection; ++section) {
+            float sectionStartX = _VarsDisp->xOffset + section * sectionWidth;
+            float sectionEndX = sectionStartX + sectionWidth;
 
-            float leftX_next_next = normalizedX_next_next - detectedRange;
-            float rightX_next_next = normalizedX_next_next + detectedRange;
-
-            int num_points = 40;
-
-            float edge_points_x[80];       // 2 * num_points
-            float edge_points_y[80];       // 2 * num_points
-
-            float edge_points_x_next[80];  // 2 * num_points
-            float edge_points_y_next[80];  // 2 * num_points
-
-            float edge_points_x_next_next[80];  // 2 * num_points
-            float edge_points_y_next_next[80];  // 2 * num_points
-
-            for (int n = 0; n < num_points; ++n) {
-                float t_left = static_cast<float>(n) / (num_points - 1);
-                edge_points_x[n] = leftX + t_left * (normalizedX - leftX);
-                edge_points_y[n] = lastY + t_left * (normalizedY - lastY);
-
-                float t_right = static_cast<float>(n) / (num_points - 1);
-                edge_points_x[num_points + n] = normalizedX + t_right * (rightX - normalizedX);
-                edge_points_y[num_points + n] = normalizedY + t_right * (lastY - normalizedY);
-            }
-
-            for (int n = 0; n < num_points; ++n) {
-                float t_left = static_cast<float>(n) / (num_points - 1);
-                edge_points_x_next[n] = leftX_next + t_left * (normalizedX_next - leftX_next);
-                edge_points_y_next[n] = lastY + t_left * (normalizedY_next - lastY);
-
-                float t_right = static_cast<float>(n) / (num_points - 1);
-                edge_points_x_next[num_points + n] = normalizedX_next + t_right * (rightX_next - normalizedX_next);
-                edge_points_y_next[num_points + n] = normalizedY_next + t_right * (lastY - normalizedY_next);
-            }
-
-            for (int n = 0; n < num_points; ++n) {
-                float t_left = static_cast<float>(n) / (num_points - 1);
-                edge_points_x_next_next[n] = leftX_next_next + t_left * (normalizedX_next_next - leftX_next);
-                edge_points_y_next_next[n] = lastY + t_left * (normalizedY_next_next - lastY);
-
-                float t_right = static_cast<float>(n) / (num_points - 1);
-                edge_points_x_next_next[num_points + n] = normalizedX_next_next + t_right * (rightX_next_next - normalizedX_next_next);
-                edge_points_y_next_next[num_points + n] = normalizedY_next_next + t_right * (lastY - normalizedY_next_next);
-            }
-
-            glBegin(GL_LINE_STRIP);
-            bool intersection = false;
-            bool intersection_next = false;
-            int intersection_ID = 0;
-            int intersection_ID_next = 0;
-
-            for (int n = 0; n < 2 * num_points; ++n) {
-                for (int j = 0; j < num_points; ++j) {
-                    if (std::abs(edge_points_x[n] - edge_points_x_next[j]) < 0.015f && std::abs(edge_points_y[n] - edge_points_y_next[j]) < 0.015f) {
-                        intersection = true;
-                        intersection_ID = j;
-                    }
-                }
-
-                if (!intersection) {
-                    glVertex2f(edge_points_x[n], edge_points_y[n]);
+            if (normalizedX >= sectionStartX && normalizedX <= sectionEndX) {
+                if (amplitude_i >= 0) {
+                    // Store the maximum positive amplitude
+                    positiveAmplitudes[section] = std::max(positiveAmplitudes[section], amplitude_i);
                 }
                 else {
-                    break;
+                    // Store the maximum (in magnitude) negative amplitude
+                    negativeAmplitudes[section] = std::max(negativeAmplitudes[section], -amplitude_i);
                 }
+                sectionXValues[section] = normalizedX;  // Store the exact x-position of the point
             }
-            do {
-                if (i + 2 >= currentSize) break;
-                range_next = ranges[i + 1];
-                amplitude_next = amplitudes[i + 1];
-
-                range_next_next = ranges[i + 2];
-                amplitude_next_next = amplitudes[i + 2];
-
-                normalizedX_next = xOffset + (range_next / maxRange) * (1.0f - xOffset);
-                normalizedY_next = yOffset + ((amplitude_next / maxAmplitude) * (1.0f - yOffset) / 2.0f + 0.5f * (1.0f - yOffset));
-
-                normalizedX_next_next = xOffset + (range_next_next / maxRange) * (1.0f - xOffset);
-                normalizedY_next_next = yOffset + ((amplitude_next_next / maxAmplitude) * (1.0f - yOffset) / 2.0f + 0.5f * (1.0f - yOffset));
-
-                leftX_next = normalizedX_next - detectedRange;
-                rightX_next = normalizedX_next + detectedRange;
-
-                leftX_next_next = normalizedX_next_next - detectedRange;
-                rightX_next_next = normalizedX_next_next + detectedRange;
-
-                for (int n = 0; n < num_points; ++n) {
-                    float t_left = static_cast<float>(n) / (num_points - 1);
-                    edge_points_x_next[n] = leftX_next + t_left * (normalizedX_next - leftX_next);
-                    edge_points_y_next[n] = lastY + t_left * (normalizedY_next - lastY);
-
-                    float t_right = static_cast<float>(n) / (num_points - 1);
-                    edge_points_x_next[num_points + n] = normalizedX_next + t_right * (rightX_next - normalizedX_next);
-                    edge_points_y_next[num_points + n] = normalizedY_next + t_right * (lastY - normalizedY_next);
-                }
-
-                for (int n = 0; n < num_points; ++n) {
-                    float t_left = static_cast<float>(n) / (num_points - 1);
-                    edge_points_x_next_next[n] = leftX_next_next + t_left * (normalizedX_next_next - leftX_next);
-                    edge_points_y_next_next[n] = lastY + t_left * (normalizedY_next_next - lastY);
-
-                    float t_right = static_cast<float>(n) / (num_points - 1);
-                    edge_points_x_next_next[num_points + n] = normalizedX_next_next + t_right * (rightX_next_next - normalizedX_next_next);
-                    edge_points_y_next_next[num_points + n] = normalizedY_next_next + t_right * (lastY - normalizedY_next_next);
-                }
-
-                for (int n = intersection_ID; n < 2 * num_points; ++n) {
-                    for (int j = 0; j < num_points; ++j) {
-                        if (std::abs(edge_points_x_next[n] - edge_points_x_next_next[j]) < 0.015f && std::abs(edge_points_y_next[n] - edge_points_y_next_next[j]) < 0.015f) {
-                            intersection_next = true;
-                            intersection_ID_next = j;
-                        }
-                    }
-
-                    if (!intersection_next) {
-                        glVertex2f(edge_points_x_next[n], edge_points_y_next[n]);
-                    }
-
-                    else {
-                        break;
-                    }
-                }
-                
-                for (int n = intersection_ID_next; n < 2 * num_points; ++n) {
-                    glVertex2f(edge_points_x_next[n], edge_points_y_next[n]);
-                }
-
-                i++;
-            } while (intersection_next);
-        
-            glEnd();
         }
     }
 
-    float finalX = xOffset + (maxRange / maxRange) * (1.0f - xOffset);
+    // Calculate the final render value for each section
+    for (int section = 0; section < numSections; ++section) {
+        // Compute Y values for positive and negative amplitudes
+        float positiveY = _VarsDisp->yOffset + 0.5f * (1.0f - _VarsDisp->yOffset) + ((positiveAmplitudes[section] / _VarsDisp->maxAmplitude) * (1.0f - _VarsDisp->yOffset) / 2.0f);
+        float negativeY = _VarsDisp->yOffset + 0.5f * (1.0f - _VarsDisp->yOffset) - ((negativeAmplitudes[section] / _VarsDisp->maxAmplitude) * (1.0f - _VarsDisp->yOffset) / 2.0f);
+
+        // Calculate the difference if both positive and negative amplitudes exist
+        if (positiveAmplitudes[section] > 0 && negativeAmplitudes[section] > 0) {
+            float positiveAmp = positiveAmplitudes[section];
+            float negativeAmp = negativeAmplitudes[section];
+
+            // Compute the difference between positive and negative amplitudes
+            float amplitudeDifference = positiveAmp - negativeAmp;
+
+            // Render the difference: if amplitudeDifference is positive, use positiveY; if negative, use negativeY
+            if (amplitudeDifference >= 0) {
+                sectionRenderValues[section] = _VarsDisp->yOffset + 0.5f * (1.0f - _VarsDisp->yOffset) + ((amplitudeDifference / _VarsDisp->maxAmplitude) * (1.0f - _VarsDisp->yOffset) / 2.0f);
+            }
+            else {
+                sectionRenderValues[section] = _VarsDisp->yOffset + 0.5f * (1.0f - _VarsDisp->yOffset) - ((-amplitudeDifference / _VarsDisp->maxAmplitude) * (1.0f - _VarsDisp->yOffset) / 2.0f);
+            }
+        }
+        else if (positiveAmplitudes[section] > 0) {
+            // Only positive value
+            sectionRenderValues[section] = positiveY;
+        }
+        else if (negativeAmplitudes[section] > 0) {
+            // Only negative value
+            sectionRenderValues[section] = negativeY;
+        }
+    }
+
+
+    // Render all sections
     glBegin(GL_LINE_STRIP);
-    glVertex2f(lastX, lastY);
-    glVertex2f(finalX, lastY);
+    glVertex2f(lastX, lastY);  // Start from lastX and y=0 (lastY)
+
+    for (int section = 0; section < numSections; ++section) {
+        if (sectionRenderValues[section] != lastY) {
+            // Render the point at the exact normalizedX
+            glVertex2f(sectionXValues[section], sectionRenderValues[section]);
+        }
+        else {
+            // No valid data point in this section, render at the section midpoint
+            float sectionMidX = _VarsDisp->xOffset + section * sectionWidth + sectionWidth / 2.0f;
+            glVertex2f(sectionMidX, lastY);
+        }
+    }
+
+    float finalX = _VarsDisp->xOffset + (_VarsDisp->maxRange / _VarsDisp->maxRange) * (1.0f - _VarsDisp->xOffset);
+    glVertex2f(finalX, lastY);  // Finish at finalX and y=0 (lastY)
     glEnd();
 }
 
-/*void CDrawAScope::drawDataPoints() {
-    glColor3f(0.0f, 1.0f, 0.0f);  
-    glLineWidth(1.0f);            
 
-    float lastX = xOffset; 
-    float lastY = yOffset + 0.5f * (1.0f - yOffset);  
-
-    for (int i = 0; i < currentSize - 1; ++i) {
-        float range = ranges[i];
-        float amplitude = amplitudes[i];
-
-        float range_next = ranges[i + 1];
-        float amplitude_next = amplitudes[i + 1];
-
-        if (range >= 0 && range <= maxRange) {
-            float normalizedX = xOffset + (range / maxRange) * (1.0f - xOffset);
-            float normalizedY = yOffset + ((amplitude / maxAmplitude) * (1.0f - yOffset) / 2.0f + 0.5f * (1.0f - yOffset));
-
-            float normalizedX_next = xOffset + (range_next / maxRange) * (1.0f - xOffset);
-            float normalizedY_next = yOffset + ((amplitude_next / maxAmplitude) * (1.0f - yOffset) / 2.0f + 0.5f * (1.0f - yOffset));
-
-            float distBetweenGrids = (1.0f - xOffset) / gridXLines;
-            detectedRange = distBetweenGrids / 8;
-
-            float leftX = normalizedX - detectedRange;
-            float rightX = normalizedX + detectedRange;
-
-            float leftX_next = normalizedX_next - detectedRange;
-            float rightX_next = normalizedX_next + detectedRange;
-
-            int num_points = 40;
-
-            float edge_points_x[80];       // 2 * num_points
-            float edge_points_y[80];       // 2 * num_points
-
-            float edge_points_x_next[80];  // 2 * num_points
-            float edge_points_y_next[80];  // 2 * num_points
-
-            glBegin(GL_LINE_STRIP);
-            bool intersection = false;
-            int intersection_ID = 0;
-
-
-            for (int n = 0; n < 2 * num_points; ++n) {
-                for (int j = 0; j < num_points; ++j) {
-                    if (std::abs(edge_points_x[n] - edge_points_x_next[j]) < 0.015f && std::abs(edge_points_y[n] - edge_points_y_next[j]) < 0.015f) {
-                        intersection = true;
-                        intersection_ID = j;
-                    }
-                }
-
-                if (!intersection) {
-                    glVertex2f(edge_points_x[n], edge_points_y[n]);
-                    i++;
-                }
-            }
-
-            for (int n = intersection_ID; n < 2 * num_points; ++n) {
-                glVertex2f(edge_points_x_next[n], edge_points_y_next[n]);
-            }
-            glEnd();
-        }
-    }
-
-    float finalX = xOffset + (maxRange / maxRange) * (1.0f - xOffset);
-    glBegin(GL_LINE_STRIP);
-    glVertex2f(lastX, lastY);
-    glVertex2f(finalX, lastY);
-    glEnd();
-}*/
 
 void CDrawAScope::addDataPoint(float range[], float amplitude[], int size) {
     currentSize = 0;
 
     for (int i = 0; i < size; i++) {
-        if (amplitude[i] > maxAmplitude) {
-            maxAmplitude = amplitude[i];
+        if (std::abs(amplitude[i]) > _VarsDisp->maxAmplitude) {
+            _VarsDisp->maxAmplitude = std::abs(amplitude[i]);
         }
         if (currentSize >= capacity) {
             resizeArray();
@@ -403,6 +274,3 @@ void CDrawAScope::addDataPoint(float range[], float amplitude[], int size) {
 
     glutPostRedisplay();
 }
-
-
-CDrawAScope scope;

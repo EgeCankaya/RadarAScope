@@ -2,19 +2,29 @@
 #define _GLOBALVARS_H
 #include <vector>
 
-extern int rangeShift;
-extern float maxRange;
-extern float maxAmplitude;
-extern float initialAmplitude;
-extern float detectedRange;
+class _Variables {
+public:
+	static _Variables* instance;
+	_Variables();
 
-extern float xOffset;
-extern float yOffset;
+	std::vector<std::pair<float, float>> dataPoints;
+	int rangeShift;
+	float maxRange;
+	float maxAmplitude;
+	float initialAmplitude;
+	float detectedRange;
+	
+	float xOffset;
+	float yOffset;
+	
+	int gridXLines;
+	int gridYLines;
+	
+	float xLabelInterval;
+	float yLabelInterval;
 
-extern int gridXLines;
-extern int gridYLines;
+	static _Variables* getInstance();
+};
 
-extern float xLabelInterval;
-extern float yLabelInterval;
 
 #endif // _GLOBALVARS_H
