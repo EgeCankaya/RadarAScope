@@ -20,8 +20,8 @@ void CDrawAScope::setCallbacks() {
 }
 
 void CDrawAScope::drawAxes() {
-    glColor3f(0.0f, 0.5f, 0.0f);
-    glLineWidth(2.0f);
+    glColor3f(0.5f, 0.0f, 0.0f);
+    glLineWidth(1.0f);
 
     glBegin(GL_LINES);
     glVertex2f(_VarsDisp->xOffset, _VarsDisp->yOffset + 0.45f);
@@ -29,6 +29,7 @@ void CDrawAScope::drawAxes() {
     glEnd();
 
     glColor3f(0.0f, 1.0f, 0.0f);
+    glLineWidth(2.0f);
     glBegin(GL_LINES);
     glVertex2f(_VarsDisp->xOffset, _VarsDisp->yOffset);
     glVertex2f(_VarsDisp->xOffset, 1.0f);
@@ -55,8 +56,9 @@ void CDrawAScope::drawGrid() {
         glEnd();
     }
 }
+
 void CDrawAScope::drawLabels() {
-    glColor3f(0.0f, 0.8f, 0.0f);
+    glColor3f(0.0f, 0.7f, 0.0f);
 
     for (int i = 0; i <= _VarsDisp->gridYLines; ++i) {
         float y = _VarsDisp->yOffset + (float)i / _VarsDisp->gridYLines * (1.0f - _VarsDisp->yOffset);
@@ -161,7 +163,6 @@ void CDrawAScope::drawDataPoints() {
     std::vector<float> positiveAmplitudes(numSections, 0.0f);  // Track max positive amplitude per section
     std::vector<float> negativeAmplitudes(numSections, 0.0f);  // Track max negative amplitude per section
 
-    // Iterate through all data points
     for (int i = 0; i < currentSize; ++i) {
         float range_i = ranges[i];
         float amplitude_i = amplitudes[i];
@@ -170,50 +171,40 @@ void CDrawAScope::drawDataPoints() {
 
         std::cout << "Amplitude[" << i << "] = " << amplitude_i << std::endl;
         std::cout << "Range[" << i << "] = " << range_i << std::endl;
-        // Normalized x, y values
         float normalizedX = _VarsDisp->xOffset + (range_i / _VarsDisp->maxRange) * (1.0f - _VarsDisp->xOffset);
 
-        // Calculate section boundaries
         float leftX = normalizedX - _VarsDisp->detectedRange;
         float rightX = normalizedX + _VarsDisp->detectedRange;
 
         int leftSection = std::max(0, int((leftX - _VarsDisp->xOffset) / sectionWidth));
         int rightSection = std::min(numSections - 1, int((rightX - _VarsDisp->xOffset) / sectionWidth));
 
-        // Adjust rendering across sections for points spanning multiple sections
         for (int section = leftSection; section <= rightSection; ++section) {
             float sectionStartX = _VarsDisp->xOffset + section * sectionWidth;
             float sectionEndX = sectionStartX + sectionWidth;
 
             if (normalizedX >= sectionStartX && normalizedX <= sectionEndX) {
                 if (amplitude_i >= 0) {
-                    // Store the maximum positive amplitude
                     positiveAmplitudes[section] = std::max(positiveAmplitudes[section], amplitude_i);
                 }
                 else {
-                    // Store the maximum (in magnitude) negative amplitude
                     negativeAmplitudes[section] = std::max(negativeAmplitudes[section], -amplitude_i);
                 }
-                sectionXValues[section] = normalizedX;  // Store the exact x-position of the point
+                sectionXValues[section] = normalizedX;
             }
         }
     }
 
-    // Calculate the final render value for each section
     for (int section = 0; section < numSections; ++section) {
-        // Compute Y values for positive and negative amplitudes
         float positiveY = _VarsDisp->yOffset + 0.5f * (1.0f - _VarsDisp->yOffset) + ((positiveAmplitudes[section] / _VarsDisp->maxAmplitude) * (1.0f - _VarsDisp->yOffset) / 2.0f);
         float negativeY = _VarsDisp->yOffset + 0.5f * (1.0f - _VarsDisp->yOffset) - ((negativeAmplitudes[section] / _VarsDisp->maxAmplitude) * (1.0f - _VarsDisp->yOffset) / 2.0f);
 
-        // Calculate the difference if both positive and negative amplitudes exist
         if (positiveAmplitudes[section] > 0 && negativeAmplitudes[section] > 0) {
             float positiveAmp = positiveAmplitudes[section];
             float negativeAmp = negativeAmplitudes[section];
 
-            // Compute the difference between positive and negative amplitudes
             float amplitudeDifference = positiveAmp - negativeAmp;
 
-            // Render the difference: if amplitudeDifference is positive, use positiveY; if negative, use negativeY
             if (amplitudeDifference >= 0) {
                 sectionRenderValues[section] = _VarsDisp->yOffset + 0.5f * (1.0f - _VarsDisp->yOffset) + ((amplitudeDifference / _VarsDisp->maxAmplitude) * (1.0f - _VarsDisp->yOffset) / 2.0f);
             }
@@ -222,34 +213,28 @@ void CDrawAScope::drawDataPoints() {
             }
         }
         else if (positiveAmplitudes[section] > 0) {
-            // Only positive value
             sectionRenderValues[section] = positiveY;
         }
         else if (negativeAmplitudes[section] > 0) {
-            // Only negative value
             sectionRenderValues[section] = negativeY;
         }
     }
 
-
-    // Render all sections
     glBegin(GL_LINE_STRIP);
-    glVertex2f(lastX, lastY);  // Start from lastX and y=0 (lastY)
+    glVertex2f(lastX, lastY); 
 
     for (int section = 0; section < numSections; ++section) {
         if (sectionRenderValues[section] != lastY) {
-            // Render the point at the exact normalizedX
             glVertex2f(sectionXValues[section], sectionRenderValues[section]);
         }
         else {
-            // No valid data point in this section, render at the section midpoint
             float sectionMidX = _VarsDisp->xOffset + section * sectionWidth + sectionWidth / 2.0f;
             glVertex2f(sectionMidX, lastY);
         }
     }
 
     float finalX = _VarsDisp->xOffset + (_VarsDisp->maxRange / _VarsDisp->maxRange) * (1.0f - _VarsDisp->xOffset);
-    glVertex2f(finalX, lastY);  // Finish at finalX and y=0 (lastY)
+    glVertex2f(finalX, lastY);
     glEnd();
 }
 
