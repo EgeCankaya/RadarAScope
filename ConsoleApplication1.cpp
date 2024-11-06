@@ -11,7 +11,7 @@ CRadarAScope* aScope = nullptr;
 
 void timerFunc(int value) {
     int randSize = rand() % 150;
-    int c=0;
+
     for (int i = 0; i < randSize; i++) {
         range[i] = rand() % 300;
         amplitude[i] = ((rand() % 100) / 10.0f) - 5.0f;

@@ -151,23 +151,23 @@ void CDrawAScope::drawDataPoints() {
     glLineWidth(1.0f);
 
     float lastX = _VarsDisp->xOffset;
-    float lastY = _VarsDisp->yOffset + 0.5f * (1.0f - _VarsDisp->yOffset);  // y=0 level
+    float lastY = _VarsDisp->yOffset + 0.5f * (1.0f - _VarsDisp->yOffset); 
 
-    const int numSections = 150;  // Number of sections along the x-axis
-    const float sectionWidth = (1.0f - _VarsDisp->xOffset) / numSections;  // Section width based on x-axis
-    _VarsDisp->detectedRange = sectionWidth / 16;  // Use detectedRange as per original logic
+    const int numSections = 150;
+    const float sectionWidth = (1.0f - _VarsDisp->xOffset) / numSections; 
+    _VarsDisp->detectedRange = sectionWidth / 16;
 
-    std::vector<float> sectionRenderValues(numSections, lastY);  // Store render values for each section, initialized to y=0
-    std::vector<float> sectionXValues(numSections, lastX);       // Store the corresponding x-values (normalizedX) for each section
+    std::vector<float> sectionRenderValues(numSections, lastY);  
+    std::vector<float> sectionXValues(numSections, lastX);  
 
-    std::vector<float> positiveAmplitudes(numSections, 0.0f);  // Track max positive amplitude per section
-    std::vector<float> negativeAmplitudes(numSections, 0.0f);  // Track max negative amplitude per section
+    std::vector<float> positiveAmplitudes(numSections, 0.0f);
+    std::vector<float> negativeAmplitudes(numSections, 0.0f);
 
     for (int i = 0; i < currentSize; ++i) {
         float range_i = ranges[i];
         float amplitude_i = amplitudes[i];
 
-        if (range_i < 0 || range_i > _VarsDisp->maxRange) continue;  // Ignore out-of-range data
+        if (range_i < 0 || range_i > _VarsDisp->maxRange) continue;
 
         std::cout << "Amplitude[" << i << "] = " << amplitude_i << std::endl;
         std::cout << "Range[" << i << "] = " << range_i << std::endl;
@@ -238,24 +238,28 @@ void CDrawAScope::drawDataPoints() {
     glEnd();
 }
 
-
-
 void CDrawAScope::addDataPoint(float range[], float amplitude[], int size) {
     currentSize = 0;
 
+    _VarsDisp->maxAmplitude = 0.0f;
+  
+
     for (int i = 0; i < size; i++) {
-        if (std::abs(amplitude[i]) > _VarsDisp->maxAmplitude) {
-            _VarsDisp->maxAmplitude = std::abs(amplitude[i]);
+        float absAmplitude = std::abs(amplitude[i]);
+
+        if (absAmplitude > _VarsDisp->maxAmplitude) {
+            _VarsDisp->maxAmplitude = absAmplitude;
         }
+
         if (currentSize >= capacity) {
             resizeArray();
         }
+
         ranges[currentSize] = range[i];
         amplitudes[currentSize] = amplitude[i];
         ++currentSize;
     }
 
     sortDataPoints();
-
     glutPostRedisplay();
 }
