@@ -1,6 +1,6 @@
 #include "CDisplay.h"
-#include "_globalVars.h"
 #include <GL/freeglut.h>
+#include "CDrawAScope.h"
 
 CDrawAScope& scope = CDrawAScope::getInstance();
 
@@ -8,8 +8,7 @@ void CDisplay::display() {
     glClear(GL_COLOR_BUFFER_BIT);
     glLoadIdentity();
     glOrtho(0.0f, 1.1f, 0.0f, 1.1f, -1.0f, 1.0f);
-
-    setCallbacks();
+     
     scope.setCallbacks();
 
     glutSwapBuffers();
@@ -50,4 +49,4 @@ void CDisplay::setCallbacks() {
     glutDisplayFunc(displayWrapper);
     glutReshapeFunc(reshapeWrapper);
 }
-
+           

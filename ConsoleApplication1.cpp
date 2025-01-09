@@ -1,4 +1,4 @@
-#include "AScope.h"
+#include "RadarAScope.h"
 #include <ctime>
 #include <cstdlib>
 #include <GL/freeglut.h>
@@ -7,7 +7,7 @@
 float range[301], amplitude[301];
 int size;
 
-CRadarAScope* aScope = nullptr; 
+CRadarAScopeDisplay* aScope = nullptr;
 
 void timerFunc(int value) {
     int randSize = rand() % 150;
@@ -16,7 +16,7 @@ void timerFunc(int value) {
         range[i] = rand() % 300;
         amplitude[i] = ((rand() % 100) / 10.0f) - 5.0f;
     }
-    aScope->addEntry(range, amplitude, randSize);
+    aScope->addEnemy(range, amplitude, randSize);
   
 
     glutTimerFunc(value, timerFunc, value);
@@ -25,9 +25,9 @@ void timerFunc(int value) {
 int main() {
     srand(static_cast<unsigned int>(time(0)));
 
-    CRadarAScopeDisplay display;
-    aScope = new CRadarAScope(&display);  
-
+    aScope = new CRadarAScopeDisplay();
+    
+    aScope->initAScope();
     aScope->run();
     glutTimerFunc(4000, timerFunc, 4000); 
     aScope->endAScope();

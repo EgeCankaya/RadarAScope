@@ -137,12 +137,9 @@
     <ClCompile Include="_globalVars.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AScope.h" />
     <ClInclude Include="CDisplay.h" />
     <ClInclude Include="CDrawAScope.h" />
-    <ClInclude Include="CRadarAScope.h" />
     <ClInclude Include="RadarAScope.h" />
-    <ClInclude Include="IRadarAScope.h" />
     <ClInclude Include="_globalVars.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

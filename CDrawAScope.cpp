@@ -1,9 +1,8 @@
 #include "CDrawAScope.h"
 #include <GL/freeglut.h>
-#include <iostream>
 #include <algorithm>
-#include <cmath>
 #include <vector>
+#include "_globalVars.h"
 
 _Variables* _VarsDisp = _Variables::getInstance();
 
@@ -14,12 +13,12 @@ CDrawAScope& CDrawAScope::getInstance() {
 
 void CDrawAScope::setCallbacks() {
     drawGrid();
-    drawAxes();
     drawLabels();
+    drawAxis();
     drawDataPoints();
 }
 
-void CDrawAScope::drawAxes() {
+void CDrawAScope::drawAxis() {
     glColor3f(0.5f, 0.0f, 0.0f);
     glLineWidth(1.0f);
 
@@ -29,7 +28,7 @@ void CDrawAScope::drawAxes() {
     glEnd();
 
     glColor3f(0.0f, 1.0f, 0.0f);
-    glLineWidth(2.0f);
+    glLineWidth(1.5f);
     glBegin(GL_LINES);
     glVertex2f(_VarsDisp->xOffset, _VarsDisp->yOffset);
     glVertex2f(_VarsDisp->xOffset, 1.0f);
@@ -62,7 +61,7 @@ void CDrawAScope::drawLabels() {
 
     for (int i = 0; i <= _VarsDisp->gridYLines; ++i) {
         float y = _VarsDisp->yOffset + (float)i / _VarsDisp->gridYLines * (1.0f - _VarsDisp->yOffset);
-        float amplitude = (i - _VarsDisp->gridYLines / 2) * (_VarsDisp->maxAmplitude / (_VarsDisp->gridYLines / 2));
+        float amplitude = (i - _VarsDisp->gridYLines / static_cast<float>(2)) * (_VarsDisp->maxAmplitude / (_VarsDisp->gridYLines / 2));
 
         float xOffsetAdjustment = (amplitude < 0.0f) ? -0.065f : -0.05f;
 
@@ -100,7 +99,6 @@ void CDrawAScope::drawLabels() {
         glPopMatrix();
     }
 }
-
 
 void CDrawAScope::resizeArray() {
     capacity *= 2;
@@ -168,9 +166,6 @@ void CDrawAScope::drawDataPoints() {
         float amplitude_i = amplitudes[i];
 
         if (range_i < 0 || range_i > _VarsDisp->maxRange) continue;
-
-        std::cout << "Amplitude[" << i << "] = " << amplitude_i << std::endl;
-        std::cout << "Range[" << i << "] = " << range_i << std::endl;
         float normalizedX = _VarsDisp->xOffset + (range_i / _VarsDisp->maxRange) * (1.0f - _VarsDisp->xOffset);
 
         float leftX = normalizedX - _VarsDisp->detectedRange;
@@ -242,7 +237,6 @@ void CDrawAScope::addDataPoint(float range[], float amplitude[], int size) {
     currentSize = 0;
 
     _VarsDisp->maxAmplitude = 0.0f;
-  
 
     for (int i = 0; i < size; i++) {
         float absAmplitude = std::abs(amplitude[i]);

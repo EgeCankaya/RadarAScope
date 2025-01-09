@@ -1,17 +1,23 @@
+#pragma once
 #ifndef RADARASCOPE_H
 #define RADARASCOPE_H
 
-#include "IRadarAScope.h"
-#include <vector>
-#include <utility>
+#ifdef BUILD_DLL
+#define DLL_EXPORT __declspec(dllexport)
+#else
+#define DLL_EXPORT __declspec(dllimport)
+#endif
 
-class CRadarAScopeDisplay : public IRadarAScope {
+class DLL_EXPORT CRadarAScopeDisplay {
 public:
-    void run() override;
-    void endAScope() override;
-    void addEntry(float ranges[], float amplitudes[], int size) override;
-private:
-    std::vector<std::pair<float, float>> dataPoints;
+    //If used with other freeGLUT init function(s) the freeGLUT wont work therefore the init function should be used once.
+    void initAScope();
+    
+    void run();
+    
+    void endAScope();
+    
+    void addEnemy(float ranges[], float amplitudes[], int size);
 };
 
 #endif // RADARASCOPE_H

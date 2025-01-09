@@ -2,28 +2,32 @@
 #include <GL/freeglut.h>
 #include "CDisplay.h"
 #include "CDrawAScope.h"
+#include <vector>
 
 CDisplay& _disp = CDisplay::getInstance();
 CDrawAScope& _scope = CDrawAScope::getInstance();
 
-void CRadarAScopeDisplay::run() {
+void CRadarAScopeDisplay::initAScope() {
     int argc = 1;
     char* argv[1] = { (char*)"RadarDisplay" };
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-    glutInitWindowSize(800, 600);
+}
+
+void CRadarAScopeDisplay::run() {
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+    glutInitWindowSize(800, 800);
     glutCreateWindow("Radar A-Scope");
 
     _disp.setCallbacks();
-    _scope.setCallbacks();
 }
 
 void CRadarAScopeDisplay::endAScope() {
     glutMainLoop();
 }
 
-void CRadarAScopeDisplay::addEntry(float ranges[], float amplitudes[], int size)
-{   
+std::vector<std::pair<float, float>> dataPoints;
+
+void CRadarAScopeDisplay::addEnemy(float ranges[], float amplitudes[], int size) {   
     _scope.addDataPoint(ranges, amplitudes, size);
     glutPostRedisplay();
 }

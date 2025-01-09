@@ -1,8 +1,6 @@
+#pragma once
 #ifndef CDRAWASCOPE_H
 #define CDRAWASCOPE_H
-
-#include "_globalVars.h"
-#include <cstdio>
 
 class CDrawAScope
 {
@@ -26,7 +24,7 @@ public:
 
 private:
     void drawGrid();
-    void drawAxes();
+    void drawAxis();
     void drawLabels();
     void resizeArray();
     void sortDataPoints();

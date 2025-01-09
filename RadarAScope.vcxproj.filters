@@ -41,16 +41,7 @@
     <ClInclude Include="CDisplay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IRadarAScope.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CRadarAScope.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RadarAScope.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AScope.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

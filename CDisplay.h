@@ -1,16 +1,13 @@
-#include "_globalVars.h"
-#include "CDrawAScope.h"
-
+#pragma once
 
 class CDisplay {
 public:
-    static void displayWrapper();
     void setCallbacks();
     static CDisplay& getInstance();
 private:
     void display();
+    static void displayWrapper();
     void reshape(int w, int h);
-    
     static void reshapeWrapper(int width, int height);
 };
 
